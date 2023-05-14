@@ -3,12 +3,13 @@
 #include "list.h"
 #include <stdbool.h>
 #include <ctype.h>
+#include <string.h>
 #define BARRA "-------------------------------------------------------"
 
 typedef struct Tarea{
-  char *nombre;
+  char nombre[31];
   int prioridad;
-  struct Tarea *precedencia; // se podrá hacer un puntero de otra Tarea de esta forma?
+  struct Tarea *precedencia; // se podrá hacer un puntero de otra Tarea de esta forma? correcto pero mejor hacer una lista con esta idea
 } Tarea;
 
 void mostrarMenu() {
@@ -19,20 +20,24 @@ void mostrarMenu() {
   puts(BARRA);
 }
 
-void agregarTarea(List * tareas, char *nombre, int prior){
+void agregarTarea(List * tareas, char nombre[], int prior){
   Tarea *nodo=(Tarea *)malloc(sizeof(Tarea));
-  strcpy(nodo->nombre,nombre); // strcpy mal hecho?
-  nodo->prioridad=prior;
-  pushBack(tareas,nodo);
-
-  //mostrar lista (pendiente)
+  strcpy(nodo->nombre,nombre);
   
+  nodo->prioridad=prior;
+  pushBack(tareas,nodo);  
+}
+
+void mostrarTareas(List * tareas){
+  for (Tarea *a = firstList(tareas); a != NULL; a = nextList(tareas)){
+    printf("%s %d\n", a->nombre,a->prioridad);
+  }
 }
 
 int main()
 {
   int comand, prioridad;
-  char *nombre=malloc(sizeof(char));
+  char nombre[31];
   List *tareas=createList();
   while(true){ 
     mostrarMenu();
@@ -49,9 +54,12 @@ int main()
 
       printf("ingrese la prioridad de su tarea\n");
       scanf("%d",&prioridad);
-      printf("llega aca");
       agregarTarea(tareas,nombre,prioridad);
       
+    }
+
+    if(comand==3){
+      mostrarTareas(tareas);
     }
 
     if(comand==0){
