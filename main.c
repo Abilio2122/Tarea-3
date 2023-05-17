@@ -6,6 +6,7 @@
 #include <string.h>
 #include "hashmap.h"
 #include "heap.h"
+#include <time.h>
 #define BARRA "-------------------------------------------------------"
   
 typedef struct Tarea Tarea;
@@ -61,26 +62,27 @@ void mostrarTareas(HashMap * map){
   List *listRealizados=createList();
   HashMap *mapAux=createMap(900);
   Heap *monMin=createHeap();
-  //List *listPrec;// puede dar error
+  List *listPrec;// puede dar error
   Pair *casillaAux;   
   Tarea *tareaLista;
   while(size(map)!=0 || sizeH(monMin)!=0){
     //recorremos el mapa
     for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){
-      List *listPrec=((Tarea *)i->value)->precedencia;
+      listPrec=((Tarea *)i->value)->precedencia;
       //en el caso de que la lista precedencia de una casilla tenga datos aka el dato tiene precedentes se verificara toda su lista para ver si algun precedente ya se hizo
       /////////////////////////////////////////////////////
 
       if(firstList(listPrec)!=NULL){
-        for (char *a = firstList(listPrec); a != NULL; a = nextList(listPrec)){
+        for (char *a = firstList(listPrec); a != NULL; ){
           //compruebo en el caso de que el mapAux tenga datos
-          if(size(mapAux)!=0){
             casillaAux=searchMap(mapAux,a);
             //en el caso de que la lista de precedentes se encuentre en el mapAux este se eliminará
             if(casillaAux!=NULL){ 
-              popCurrent(listPrec);
+              popCurrent(listPrec); //cuidado
+              a = nextList(listPrec);
+              continue;
             }
-          }
+            a = nextList(listPrec);
         }
       }
       ///////////////////////////////////////////////////////////
@@ -96,13 +98,13 @@ void mostrarTareas(HashMap * map){
         // 3. Por último, se eliminará la raíz del monMin
     
     tareaLista=heap_top(monMin);
-    pushBack(listRealizados,tareaLista);
+    pushBack(listRealizados,tareaLista); 
     insertMap(mapAux,tareaLista->nombre,tareaLista);
     heap_pop(monMin);
   }
   //a continuacion se mostraran los datos precedentes
   for (Tarea *a = firstList(listRealizados); a != NULL; a = nextList(listRealizados)){
-    printf("%s %d\n", a->nombre,a->prioridad);
+    printf("Tarea: %s Prioridad: %d\n", ((Tarea*)a)->nombre,((Tarea*)a)->prioridad);
   }
 }
 
@@ -130,7 +132,7 @@ int main()
     
     if(comand==1){
       printf("ingrese el nombre de tarea\n");
-      scanf("%s",nombre);
+      scanf(" %[^\n]s", nombre);
       
       
       /*printf("ingrese la prioridad de su tarea\n");
@@ -143,11 +145,11 @@ int main()
 
     if(comand==2){
       printf("ingrese el nombre de la tarea");
-      scanf("%s",nombre);
+      scanf(" %[^\n]s", nombre);
       strcpy(tarea,nombre);
 
       printf("ingrese el precedente de la tarea");
-      scanf("%s",nombre);
+      scanf(" %[^\n]s", nombre);
       strcpy(preced,nombre);
 
       estPreced(map,preced,tarea);
@@ -192,6 +194,9 @@ plan mostrar tareas
 ---------------------------------------------------------------------
 
 recordatorios: 
+-uso de sgb
+- se le usa el run 
+- una ves obtenido el error se usara backtrace 
 
 -para recorrer listas:
 
@@ -218,6 +223,8 @@ void mostrarTareas(HashMap * map){
 
 detalles que ver:
 si hay 2 claves con el mismo nombre da error
+el mapa se borra con los datos asi que usar la funcion mostrar 2 veces dara error
+el resultado da pero no indica cuales eran los precedentes
 */
 
 
