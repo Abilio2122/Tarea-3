@@ -59,22 +59,22 @@ void estPreced(HashMap *map, char preced[], char nombre[]){
 
 void mostrarTareas(HashMap * map){
   List *listRealizados=createList();
-  HashMap *mapAux=createMap(10002);
+  HashMap *mapAux=createMap(900);
   Heap *monMin=createHeap();
-  List *listPrec;// puede dar error
-  Pair *casillaAux;
+  //List *listPrec;// puede dar error
+  Pair *casillaAux;   
   Tarea *tareaLista;
-
   while(size(map)!=0 || sizeH(monMin)!=0){
     //recorremos el mapa
     for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){
-      listPrec=((Tarea *)i->value)->precedencia;
+      List *listPrec=((Tarea *)i->value)->precedencia;
       //en el caso de que la lista precedencia de una casilla tenga datos aka el dato tiene precedentes se verificara toda su lista para ver si algun precedente ya se hizo
       /////////////////////////////////////////////////////
+
       if(firstList(listPrec)!=NULL){
         for (char *a = firstList(listPrec); a != NULL; a = nextList(listPrec)){
           //compruebo en el caso de que el mapAux tenga datos
-          if(size(mapAux)){
+          if(size(mapAux)!=0){
             casillaAux=searchMap(mapAux,a);
             //en el caso de que la lista de precedentes se encuentre en el mapAux este se eliminará
             if(casillaAux!=NULL){ 
