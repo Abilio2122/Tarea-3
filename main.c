@@ -25,7 +25,7 @@ void mostrarMenu() {
   puts(BARRA);
 }
 
-void agregarTarea(HashMap * map, char nombre[], int prior){
+void agregarTarea(HashMap * map, char nombre[],int prior){
   Tarea *nodo=(Tarea *)malloc(sizeof(Tarea));
   strcpy(nodo->nombre,nombre);
   
@@ -47,7 +47,7 @@ void estPreced(HashMap *map, char preced[], char nombre[]){
   //guardo la lista precedente en una variable por orden
   List *listPrec=((Tarea *)casilla->value)->precedencia;
 
-  //busco la tarea prec
+  //busco la tarea precedente
   Pair *casillaPrec=searchMap(map,preced);
   if(casillaPrec==NULL){
     printf("no se encontro dato precedente");
@@ -58,19 +58,20 @@ void estPreced(HashMap *map, char preced[], char nombre[]){
 }
 
 
-void mostrarTareas(HashMap * map){
+List * Ordenar(HashMap * mapOriginal,HashMap * map){
   List *listRealizados=createList();
-  HashMap *mapAux=createMap(900);
+  HashMap *mapAux=createMap(10002);
   Heap *monMin=createHeap();
-  List *listPrec;// puede dar error
+  List *listPrec; // una variable para ordenar mejor
+  List *listPrecOriginal; // para asignarles una copia de precedentes originales y asignarles al final a las tareas listas para que muestre su lista de precedentes al final
   Pair *casillaAux;   
   Tarea *tareaLista;
+  //copia lista de precedencia aqui con un for
   while(size(map)!=0 || sizeH(monMin)!=0){
     //recorremos el mapa
     for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){
       listPrec=((Tarea *)i->value)->precedencia;
       //en el caso de que la lista precedencia de una casilla tenga datos aka el dato tiene precedentes se verificara toda su lista para ver si algun precedente ya se hizo
-      /////////////////////////////////////////////////////
 
       if(firstList(listPrec)!=NULL){
         for (char *a = firstList(listPrec); a != NULL; ){
@@ -85,7 +86,6 @@ void mostrarTareas(HashMap * map){
             a = nextList(listPrec);
         }
       }
-      ///////////////////////////////////////////////////////////
       //en el otro caso inserto el dato directamente en el monticulo minimo
       if(firstList(listPrec)==NULL){ 
         heap_push(monMin,i->value,((Tarea *)i->value)->prioridad);
@@ -98,29 +98,133 @@ void mostrarTareas(HashMap * map){
         // 3. Por último, se eliminará la raíz del monMin
     
     tareaLista=heap_top(monMin);
+
+    //copiare la lista de precedentes a las de las listas de tareas hechas
+    if(tareaLista==NULL){
+      printf("tareaLista fue nulo");
+      return NULL;
+    }
+    Pair *casillaOriginal=searchMap(mapOriginal,(Tarea*) tareaLista->nombre);
+    listPrecOriginal=((Tarea *)casillaOriginal->value)->precedencia;
+    if(listPrecOriginal!=NULL){ 
+      for (char *b = firstList(listPrecOriginal); b != NULL; b = nextList(listPrecOriginal)){
+        pushBack(((Tarea *)tareaLista)->precedencia, b);
+      }
+    }
+    //asignare los datos a la lista de realizados
     pushBack(listRealizados,tareaLista); 
     insertMap(mapAux,tareaLista->nombre,tareaLista);
     heap_pop(monMin);
   }
-  //a continuacion se mostraran los datos precedentes
-  for (Tarea *a = firstList(listRealizados); a != NULL; a = nextList(listRealizados)){
-    printf("Tarea: %s Prioridad: %d\n", ((Tarea*)a)->nombre,((Tarea*)a)->prioridad);
+  return listRealizados;
+}
+
+void mostrarTareas(List * listOrdenados){
+  //a continuacion se mostraran los datos 
+  for (Tarea *a = firstList(listOrdenados); a != NULL; a = nextList(listOrdenados)){
+    printf("Tarea: %s Prioridad: %d ", ((Tarea*)a)->nombre,((Tarea*)a)->prioridad);
+    //recorrere la lista de precedentes de la tarea hecha para mostrar sus respectivos precedentes
+    printf("Precedentes: ");
+    for (char *b = firstList(((Tarea*)a)->precedencia); b != NULL; b = nextList(((Tarea*)a)->precedencia)){
+      printf("(%s) ",b);
+    }
+    printf("\n");
   }
 }
+
+void copiarHashMap(HashMap* mapaOriginal, HashMap* mapaAuxiliar) {
+    for (Pair* par = firstMap(mapaOriginal); par != NULL; par = nextMap(mapaOriginal)) {
+        Tarea* tareaOriginal = (Tarea*)par->value;
+
+        // creo la variable tareaAuxiliar para el mapa auxiliar
+        Tarea* tareaAuxiliar = (Tarea*)malloc(sizeof(Tarea));
+        strcpy(tareaAuxiliar->nombre, tareaOriginal->nombre);
+        tareaAuxiliar->prioridad = tareaOriginal->prioridad;
+
+        // copio la lista de precedencia (si existe)
+        if (tareaOriginal->precedencia != NULL) {
+            tareaAuxiliar->precedencia = createList();
+            for (char* precedente = firstList(tareaOriginal->precedencia); precedente != NULL; precedente = nextList(tareaOriginal->precedencia)) {
+                pushBack(tareaAuxiliar->precedencia, precedente);
+            }
+        }
+
+        // inserto la tarea copiada en el mapa auxiliar
+        insertMap(mapaAuxiliar, tareaAuxiliar->nombre, tareaAuxiliar);
+    }
+}
+
+void marcListo(List * listOrdenados, HashMap * map, char tareaElim[] ){
+  unsigned short comand;
+  Pair* casilla;
+  List* listPrec;
+  Tarea *tarea;
+  for(Pair *j=firstMap(map);j!=NULL;j=nextMap(map)){
+    tarea=(Tarea*)j->value;
+    if(strcmp(tareaElim,tarea->nombre)==0){
+      //una vez encontrado veremos diferentes condiciones
+      //compruebo el caso en que la tarea tuviera precedencia de ser asi ingreso con distintas condiciones
+      if(tarea->precedencia!=NULL){
+        
+        //compruebo con una advertencia que el usuario este seguro de su desición
+        printf("¿Esta seguro que quiere eliminar esta tarea? ingrese si:1 no:0");
+        scanf("%hu", &comand);
+        while(comand!=0&&comand!=1){
+          printf("ingrese comando valido\n");
+          scanf("%hu", &comand);
+        }
+        //si el usuario ingresa si entonces se eliminara la tarea de la lista de tareas ordenadas y lo cu
+        if(comand==1){
+          popCurrent(listOrdenados);
+          eraseMap(map,tareaElim);
+          //eliminare a los posibles numero que lo hayan tenido de precedente
+          for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){ 
+            listPrec=((Tarea *)i->value)->precedencia;
+            if(listPrec!=NULL){
+              for(char *l = firstList(listPrec); l != NULL; l = nextList(listPrec)){
+                if(strcmp(l,tareaElim)==0){
+                  popCurrent(listPrec);
+                }
+              }
+            }
+          }
+          //////////////////////////////////////////////////////////////////////
+          return;
+        }
+      }
+      //si no tiene precedencia elimino la tarea y lo cuento como realizado instantaneamente
+      else{
+        popCurrent(listOrdenados);
+        eraseMap(map,tareaElim);
+        
+        //eliminare a los posibles numero que lo hayan tenido de precedente
+        for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){
+          listPrec=((Tarea *)i->value)->precedencia;
+          if(listPrec!=NULL){
+            for(char *l = firstList(listPrec); l != NULL; l = nextList(listPrec)){
+              if(strcmp(l,tareaElim)==0){
+                popCurrent(listPrec);
+              }
+            }
+          }
+        }
+        //////////////////////////////////////////////////////////////////////
+        return;
+        }
+      
+    }
+  }
+  return;  
+}
+
 
 int main()
 {
   HashMap *map = createMap(10002); 
   int comand, prioridad;
+  List *listOrdenados=createList();
   char nombre[31], tarea[31], preced[31];
-  // para crear un numero aleatorio
-  srand(time(NULL));  // Inicializar la semilla de generación de números aleatorios
-  int min = 1;
-  int max = 10;
-  int randomNum;
-  //////////////////////////////////////////////////////////////////////////////
   while(true){ 
-    randomNum = min + rand() % (max - min + 1); // genera randoms
     
     mostrarMenu();
     scanf("%d",&comand);
@@ -133,14 +237,17 @@ int main()
     if(comand==1){
       printf("ingrese el nombre de tarea\n");
       scanf(" %[^\n]s", nombre);
+      while (searchMap(map,nombre)!=NULL){
+        printf("ingreso un nombre ya ocupado intente denuevo\n");
+        scanf(" %[^\n]s", nombre);
+      }
       
       
-      /*printf("ingrese la prioridad de su tarea\n");
+      printf("ingrese la prioridad de su tarea\n");
       scanf("%d",&prioridad);
-      */
       
-      agregarTarea(map,nombre,randomNum);
-      printf("%d",randomNum);
+      
+      agregarTarea(map,nombre,prioridad);
     }
 
     if(comand==2){
@@ -148,7 +255,7 @@ int main()
       scanf(" %[^\n]s", nombre);
       strcpy(tarea,nombre);
 
-      printf("ingrese el precedente de la tarea");
+      printf("ingrese el precedente de la tarea y sea conciente de errores logicos");
       scanf(" %[^\n]s", nombre);
       strcpy(preced,nombre);
 
@@ -157,9 +264,27 @@ int main()
     }
     
     if(comand==3){
-      mostrarTareas(map);
+      HashMap *copiaMap = createMap(10002); 
+      copiarHashMap(map,copiaMap);
+      //lo almaceno aca para usarlo en otras funciones
+      listOrdenados=Ordenar(map,copiaMap);
+      
+      mostrarTareas(listOrdenados);
     }
 
+    if(comand==4){
+      HashMap *copiaMap = createMap(10002); 
+      copiarHashMap(map,copiaMap);
+      //lo almaceno aca para usarlo en otras funciones
+      listOrdenados=Ordenar(map,copiaMap);
+      
+      printf("ingrese el nombre de la tarea a eliminar");
+      scanf(" %[^\n]s", nombre);
+      strcpy(tarea,nombre);
+
+      marcListo(listOrdenados,map,tarea);
+    }
+    
     if(comand==0){
       printf("Fin del programa");
       break;
@@ -169,62 +294,5 @@ int main()
   return 0;
 }
 
-/*
-plan para la funcion procedencia:
--hacer un hashmap para buscar los nodos de la Tarea por clave
--empieza por recibir un nodo de tarea 
--asignarle a ese nodo dentro de su struct la parte de el puntero de procedencia la direccion de el nodo al que le debe la procedencia.
-
------------------------------------------------------------------------
-
-plan mostrar tareas
-        estructuras necesitadas
-        -lista de realizados
-        -mapa auxiliar que almacenara las tareas hechas 
-        -usar monticulo minimo para reorganizar las tareas
--while se tienen que acabar los datos del mapa
--for se recorre todo el mapa
--en el caso de que no tenga precedente se insertara en el mapa auxiliar y tambien se insertara en el monticulo minimo
--en cada casilla tendra una lista que se comprobara si un dato dentro de esa lista estara en el mapa auxiliar, en el caso de que esté este precedente se eliminara de la lista
--al final de el for se hara lo siguiente
--popheap eliminara la raiz para ponerlo en la lista de realizados
--se agregaran los datos en la lista de tareas realizadas.
--de la lista se pone al mapa auxiliar
-
----------------------------------------------------------------------
-
-recordatorios: 
--uso de sgb
-- se le usa el run 
-- una ves obtenido el error se usara backtrace 
-
--para recorrer listas:
-
-for (Tarea *a = firstList(tareas); a != NULL; a = nextList(tareas)){
-    printf("%s %d\n", a->nombre,a->prioridad);
-  }
-  
-  
--para comprobar si la funcion 1 y 2 funcionan correctamente
-
-void mostrarTareas(HashMap * map){
-  for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){
-    printf("%s,%d\n",i->key,((Tarea *)i->value)->prioridad);
-    //recorro lista de precedencia casilla
-    for (char *a = firstList(((Tarea *)i->value)->precedencia); a != NULL; a = nextList(((Tarea *)i->value)->precedencia)){
-      printf("precedentes:");
-      printf("%s, ",a);
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-
-
-detalles que ver:
-si hay 2 claves con el mismo nombre da error
-el mapa se borra con los datos asi que usar la funcion mostrar 2 veces dara error
-el resultado da pero no indica cuales eran los precedentes
-*/
 
 
