@@ -173,3 +173,12 @@ Pair * nextMap(HashMap * map) {
   Pair * pair = map->buckets[map->current];
   return pair;
 }
+
+int size(HashMap *map) {
+    if (map == NULL) {
+        // Si el puntero al mapa es NULL, no hay elementos
+        return 0;
+    }
+
+    return map->size;
+}

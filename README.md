@@ -22,7 +22,7 @@ considero que trabaje con un 7 ya que pregunte y avance todos los dias de forma 
 
 aspectos a mejorar: 
 
--uno de las cosas a mejorar seria entrenar mejor todo lo que venga a considerarse manejeo de cadena de caracteres
+-uno de las cosas a mejorar seria entrenar mejor todo lo que venga a considerarse manejo de cadena de caracteres
 
 -practicar mejor mis habilidades de ejecucion de abstracto a concreto
 
