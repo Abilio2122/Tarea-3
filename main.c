@@ -164,23 +164,23 @@ void marcListo(List * listOrdenados, HashMap * map, char tareaElim[] ){
     if(strcmp(tareaElim,tarea->nombre)==0){
       //una vez encontrado veremos diferentes condiciones
       //compruebo el caso en que la tarea tuviera precedencia de ser asi ingreso con distintas condiciones
-      if(tarea->precedencia!=NULL){
+      if(firstList(tarea->precedencia)!=NULL){
         
         //compruebo con una advertencia que el usuario este seguro de su desición
         printf("¿Esta seguro que quiere eliminar esta tarea? ingrese si:1 no:0");
         scanf("%hu", &comand);
-        while(comand!=0&&comand!=1){
+        while(comand!=1 && comand!=0){
           printf("ingrese comando valido\n");
           scanf("%hu", &comand);
         }
-        //si el usuario ingresa si entonces se eliminara la tarea de la lista de tareas ordenadas y lo cu
+        //si el usuario ingresa "si" entonces se eliminara la tarea de la lista de tareas ordenadas 
         if(comand==1){
           popCurrent(listOrdenados);
           eraseMap(map,tareaElim);
           //eliminare a los posibles numero que lo hayan tenido de precedente
           for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){ 
             listPrec=((Tarea *)i->value)->precedencia;
-            if(listPrec!=NULL){
+            if(firstList(listPrec)!=NULL){
               for(char *l = firstList(listPrec); l != NULL; l = nextList(listPrec)){
                 if(strcmp(l,tareaElim)==0){
                   popCurrent(listPrec);
@@ -197,10 +197,10 @@ void marcListo(List * listOrdenados, HashMap * map, char tareaElim[] ){
         popCurrent(listOrdenados);
         eraseMap(map,tareaElim);
         
-        //eliminare a los posibles numero que lo hayan tenido de precedente
+        //eliminare a los posibles numeros que lo hayan tenido de precedente
         for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){
           listPrec=((Tarea *)i->value)->precedencia;
-          if(listPrec!=NULL){
+          if(firstList(listPrec)!=NULL){
             for(char *l = firstList(listPrec); l != NULL; l = nextList(listPrec)){
               if(strcmp(l,tareaElim)==0){
                 popCurrent(listPrec);
@@ -217,7 +217,6 @@ void marcListo(List * listOrdenados, HashMap * map, char tareaElim[] ){
   return;  
 }
 
-
 int main()
 {
   HashMap *map = createMap(10002); 
@@ -229,7 +228,8 @@ int main()
     mostrarMenu();
     scanf("%d",&comand);
 
-    while (comand >  4 || comand < 0) {
+    
+    while (comand< 0||comand >4){
       printf("Ingrese un número válido \n");
       scanf("%d", &comand);
     }
