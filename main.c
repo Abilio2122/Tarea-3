@@ -154,7 +154,7 @@ void copiarHashMap(HashMap* mapaOriginal, HashMap* mapaAuxiliar) {
     }
 }
 
-void marcListo(List * listOrdenados, HashMap * map, char tareaElim[] ){
+void marcListo(HashMap * map, char tareaElim[] ){
   unsigned short comand;
   Pair* casilla;
   List* listPrec;
@@ -175,7 +175,6 @@ void marcListo(List * listOrdenados, HashMap * map, char tareaElim[] ){
         }
         //si el usuario ingresa "si" entonces se eliminara la tarea de la lista de tareas ordenadas 
         if(comand==1){
-          popCurrent(listOrdenados);
           eraseMap(map,tareaElim);
           //eliminare a los posibles numero que lo hayan tenido de precedente
           for(Pair *i=firstMap(map);i!=NULL;i=nextMap(map)){ 
@@ -194,7 +193,6 @@ void marcListo(List * listOrdenados, HashMap * map, char tareaElim[] ){
       }
       //si no tiene precedencia elimino la tarea y lo cuento como realizado instantaneamente
       else{
-        popCurrent(listOrdenados);
         eraseMap(map,tareaElim);
         
         //eliminare a los posibles numeros que lo hayan tenido de precedente
@@ -282,7 +280,7 @@ int main()
       scanf(" %[^\n]s", nombre);
       strcpy(tarea,nombre);
 
-      marcListo(listOrdenados,map,tarea);
+      marcListo(map,tarea);
     }
     
     if(comand==0){
