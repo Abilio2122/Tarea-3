@@ -173,7 +173,7 @@ void marcListo(HashMap * map, char tareaElim[] ){
           printf("ingrese comando valido\n");
           scanf("%hu", &comand);
         }
-        //si el usuario ingresa "si" entonces se eliminara la tarea de la lista de tareas ordenadas 
+        //si el usuario ingresa "si" entonces se eliminara la tarea  
         if(comand==1){
           eraseMap(map,tareaElim);
           //eliminare a los posibles numero que lo hayan tenido de precedente
